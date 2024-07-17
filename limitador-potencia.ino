@@ -58,7 +58,7 @@ void setup(){
 
 void loop(){
   // read all PWM channels
-  PWMRead();
+  readPWMChannels();
 
   // PWM signal coming from the other Arduino and from the RX
   uint16_t pwmArduino = Channels[0].tWidth;
@@ -69,9 +69,21 @@ void loop(){
 
   // calculate limited PWM
   // this is where we read voltage and current from the battery
-  // and calculate a new PWM
-  // so that power (volts * amps) doesn't exceed a specified value
-  uint16_t outputPWM = 1200; // placeholder
+  // and calculate a new PWM so that power (volts * amps)
+  // doesn't exceed a specified value
+  uint16_t outputPWM;
+
+  // leitura da corrente
+  float current = readCurrent();
+
+  // leitura da tensao
+  float voltage = readVoltage();
+
+  // calculo de potencia (corrente * tensao)
+  float power = voltage * current;
+
+  // controlador PID para gerar um PWM novo
+  outputPWM = 1200; // placeholder
 
   // check if calculated PWM is close to the PWM calculated by the other arduino
   if(inRange(outputPWM, pwmArduino, TOLERANCE)){
@@ -79,7 +91,7 @@ void loop(){
     digitalWrite(pinCheckOut, HIGH);
   }
   else{
-    // PWM is out of range, output negated Check pin from the other Arduino
+    // PWM is out of range, set output to negated Check pin from the other Arduino
     digitalWrite(pinCheckOut, !check);
   }
 
@@ -94,7 +106,7 @@ bool inRange(uint16_t value, uint16_t reference, uint16_t tolerance){
 
 // This function will read all PWM channels
 // and store the pulse width in microseconds
-void PWMRead(){
+void readPWMChannels(){
   // Current channel
   static uint8_t channel = 0;
 
@@ -145,4 +157,26 @@ void PWMRead(){
   // go to next channel
   if(++channel >= NUM_CHANNELS)
     channel = 0;
+}
+
+// TODO
+// This function will read the current sensor and return its value
+float readCurrent(){
+  // PLACEHOLDER
+  float current;
+
+  // read current sensor
+
+  return current;
+}
+
+// TODO
+// This function will read the voltage sensor and return its value
+float readVoltage(){
+  // PLACEHOLDER
+  float voltage;
+
+  // read voltage sensor
+
+  return voltage;
 }
