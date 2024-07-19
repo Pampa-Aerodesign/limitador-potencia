@@ -1,4 +1,5 @@
 #include <Servo.h>
+#include <PID_v1.h>
 
 // number of PWM inputs
 #define NUM_CHANNELS 2
@@ -37,6 +38,17 @@ Channels_t Channels[NUM_CHANNELS] = {0};
 // Servo object (calculated PWM output for the ESC)
 Servo esc;
 
+// PID's variables
+double setpoint;        // Desired value of Power
+double input;           // Calculated power
+double output;          // PID's output that will be used to set the PWM
+
+// Initial PID's Parameters
+double kp = 2.0, ki = 5.0, kd = 1.0;
+
+// Creating the PID Object
+PID myPID(&input, &output, &setpoint, kp, ki, kd, DIRECT);
+
 void setup(){
   // Serial.begin(115200);
 
@@ -54,6 +66,11 @@ void setup(){
     Channels[i].pinStateLast = digitalRead(Channels[i].pin);
     Channels[i].tStart = micros();
   }
+  // Define the range of PID's outputs (1000 a 2000)
+  myPID.SetOutputLimits(1000, 2000);
+
+  // Enables the PID controller 
+  myPID.SetMode(AUTOMATIC);
 }
 
 void loop(){
@@ -73,17 +90,24 @@ void loop(){
   // doesn't exceed a specified value
   uint16_t outputPWM;
 
-  // leitura da corrente
-  float current = readCurrent();
+  // reading of current
+  // due to the library this data needs to be a Double
+  double current = readCurrent();
 
-  // leitura da tensao
-  float voltage = readVoltage();
+  // reading of voltage
+  // due to the library this data needs to be a Double
+  double voltage = readVoltage();
 
-  // calculo de potencia (corrente * tensao)
-  float power = voltage * current;
+  // calculation of power: (current * voltage)
+  // due to the library this data needs to be a Double
+  double power = voltage * current;
 
-  // controlador PID para gerar um PWM novo
-  outputPWM = 1200; // placeholder
+  // run the PID calculation
+  myPID.Compute();
+
+  // PID controller is used to generate a new PWM
+  // uses a cast to guarantee 16-bit integer format
+  outputPWM = static_cast<uint16_t>(output);
 
   // check if calculated PWM is close to the PWM calculated by the other arduino
   if(inRange(outputPWM, pwmArduino, TOLERANCE)){
@@ -161,22 +185,22 @@ void readPWMChannels(){
 
 // TODO
 // This function will read the current sensor and return its value
-float readCurrent(){
+double readCurrent(){
   // PLACEHOLDER
-  float current;
+  double current;
 
   // read current sensor
 
-  return current;
+  double current;
 }
 
 // TODO
 // This function will read the voltage sensor and return its value
-float readVoltage(){
+double readVoltage(){
   // PLACEHOLDER
-  float voltage;
+  double voltage;
 
   // read voltage sensor
 
-  return voltage;
+  double voltage;
 }
