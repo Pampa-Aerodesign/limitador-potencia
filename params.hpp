@@ -1,9 +1,12 @@
+/*
+  This file contains system parameters such as input and output pins,
+  parameters, constants and data structures.
+  Each parameter should have a comment on top of it explaining its use
+  and preferably should be grouped together with other related parameters.
+*/
 #pragma once
 #include <stdint.h>
 #include <pins_arduino.h>
-
-// number of PWM inputs
-#define NUM_CHANNELS 2
 
 // PWM output upper bound in microseconds
 #define MAX_PWM 2000
@@ -41,6 +44,9 @@ const uint8_t PinsPWM[] = {
   pinPWMArduino,
   pinPWMRX
 };
+
+// shouldn't need to change
+const uint8_t NUM_CHANNELS = sizeof(PinsPWM)/sizeof(PinsPWM[0]);
 
 // Channel struct
 typedef struct structChannels{
