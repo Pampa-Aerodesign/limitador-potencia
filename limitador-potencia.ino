@@ -11,8 +11,7 @@
 #define TOLERANCE 100
 
 // Check pin input and output
-const uint8_t pinCheckOut = 13;
-const uint8_t pinCheckIn = 12;
+const uint8_t pinCheck = 13;
 
 // PWM input pins
 const uint8_t pinPWMArduino = 10;
@@ -55,9 +54,8 @@ void setup(){
   esc.attach(9);  // attaches the ESC on pin 9 to the servo object
 
   // setup check pins
-  pinMode(pinCheckOut, OUTPUT);
-  pinMode(pinCheckIn, INPUT);
-  digitalWrite(13, HIGH);
+  pinMode(pinCheck, OUTPUT);
+  digitalWrite(pinCheck, HIGH);
 
   // setup channel pins
   for(int i = 0; i < NUM_CHANNELS; i++){
@@ -80,9 +78,6 @@ void loop(){
   // PWM signal coming from the other Arduino and from the RX
   uint16_t pwmArduino = Channels[0].tWidth;
   uint16_t pwmRX = Channels[1].tWidth;
-
-  // read check pin
-  uint8_t check = digitalRead(pinCheckIn);
 
   // calculate limited PWM
   // this is where we read voltage and current from the battery
@@ -112,11 +107,11 @@ void loop(){
   // check if calculated PWM is close to the PWM calculated by the other arduino
   if(inRange(outputPWM, pwmArduino, TOLERANCE)){
     // PWM is within tolerance, output HIGH on the Check pin
-    digitalWrite(pinCheckOut, HIGH);
+    digitalWrite(pinCheck, HIGH);
   }
   else{
-    // PWM is out of range, set output to negated Check pin from the other Arduino
-    digitalWrite(pinCheckOut, !check);
+    // PWM is out of range, set check pin to low
+    digitalWrite(pinCheck, LOW);
   }
 
   // send calculated PWM signal to the ESC
@@ -191,7 +186,7 @@ double readCurrent(){
 
   // read current sensor
 
-  double current;
+  return current;
 }
 
 // TODO
@@ -202,5 +197,5 @@ double readVoltage(){
 
   // read voltage sensor
 
-  double voltage;
+  return voltage;
 }
