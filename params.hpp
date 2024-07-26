@@ -37,6 +37,9 @@ const uint8_t pinCurrent = PIN_A4;
 // Check pin output
 const uint8_t pinCheck = 13;
 
+// ESC PWM output pin
+const uint8_t pinESC = 9;
+
 // PWM input pins
 const uint8_t pinPWMArduino = 10;
 const uint8_t pinPWMRX = 11;

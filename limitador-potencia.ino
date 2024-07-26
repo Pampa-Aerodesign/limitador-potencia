@@ -28,7 +28,7 @@ void setup(){
   // DEBUG
   // Serial.begin(115200);
 
-  esc.attach(9);  // attaches the ESC on pin 9 to the servo object
+  esc.attach(pinESC);  // attaches the ESC on pinESC to the servo object
 
   // setup check pins
   pinMode(pinCheck, OUTPUT);
