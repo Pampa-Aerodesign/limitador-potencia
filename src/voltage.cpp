@@ -7,9 +7,10 @@ double readVoltage(){
   double voltage;
 
   // read voltage sensor
-  double value = analogRead(pinVoltage);
-  value = (value * VREF) / 1024.0; // VREF might change depending on power supply
-  voltage = value / (R2/(R1+R2));
+  int adcValue = analogRead(pinVoltage);
+
+  // apply correction factor
+  voltage = (mVpS * adcValue) / VOLT_FACTOR;
 
   return voltage;
 }

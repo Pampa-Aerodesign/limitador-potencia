@@ -7,11 +7,10 @@ double readCurrent(){
   double current;
 
   // read current sensor
-  double adcValue = analogRead(pinCurrent);
+  int adcValue = analogRead(pinCurrent);
 
-  adcValue = resolution * adcValue;
-  current = adcValue / sens;
-  // current = (adcValue - offset) / sens;
+  // apply correction factor
+  current = (mVpS * adcValue) / AMP_FACTOR;
 
   return current;
 }

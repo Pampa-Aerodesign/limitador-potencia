@@ -17,18 +17,16 @@ double setpoint;        // Desired value of Power
 double input;           // Calculated power
 double output;          // PID's output that will be used to set the PWM
 
-// Initial PID's Parameters
-double kp = 2.0, ki = 5.0, kd = 1.0;
-
 // Creating the PID Object
-PID pid(&input, &output, &setpoint, kp, ki, kd, DIRECT);
+PID pid(&input, &output, &setpoint, KP, KI, KD, DIRECT);
 
 
 void setup(){
   // DEBUG
   // Serial.begin(115200);
 
-  esc.attach(pinESC);  // attaches the ESC on pinESC to the servo object
+  // attaches the ESC on pinESC to the servo object
+  esc.attach(pinESC); 
 
   // setup check pins
   pinMode(pinCheck, OUTPUT);
@@ -41,12 +39,14 @@ void setup(){
     Channels[i].pinStateLast = digitalRead(Channels[i].pin);
     Channels[i].tStart = micros();
   }
+
   // Define the range of PID's outputs (1000 a 2000)
-  pid.SetOutputLimits(1000, 2000);
+  pid.SetOutputLimits(MIN_PWM, MAX_PWM);
 
   // Enables the PID controller 
   pid.SetMode(AUTOMATIC);
 }
+
 
 void loop(){
   // read all PWM channels
@@ -74,10 +74,19 @@ void loop(){
   // due to the library this data needs to be a Double
   double power = voltage * current;
 
+  // map input PWM to output power
+  // throttle at   0% =   0 watts
+  // throttle at 100% = 700 watts
+  int targetPower = map(pwmRX, MIN_PWM, MAX_PWM, 0, MAX_POWER);
+
+  // set input and setpoint
+  setpoint = targetPower;
+  input = power;
+
   // run the PID calculation
   pid.Compute();
 
-  // PID controller is used to generate a new PWM
+  // output the new PWM from the PID
   // uses a cast to guarantee 16-bit integer format
   outputPWM = static_cast<uint16_t>(output);
 
@@ -85,16 +94,18 @@ void loop(){
   if(inRange(outputPWM, pwmArduino, TOLERANCE)){
     // PWM is within tolerance, output HIGH on the Check pin
     digitalWrite(pinCheck, HIGH);
+
+    // send calculated PWM signal to the ESC
+    esc.writeMicroseconds(outputPWM); 
   }
   else{
     // PWM is out of range, set check pin to low
     digitalWrite(pinCheck, LOW);
+
+    // send minimum PWM signal to ESC
+    esc.writeMicroseconds(MIN_PWM);
   }
-
-  // send calculated PWM signal to the ESC
-  esc.writeMicroseconds(outputPWM); 
 }
-
 
 // Return true if value is close to the reference plus or minus tolerance
 bool inRange(uint16_t value, uint16_t reference, uint16_t tolerance){

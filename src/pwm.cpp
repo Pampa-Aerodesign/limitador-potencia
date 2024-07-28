@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "../inc/pwm.hpp"
 
-// Flag used to check if PWM reached MAX_PWM
+// Flag used to check if PWM reached MAX_PWM_OUTPUT
 int maxFlag = 0;
 
 // This function will read all PWM channels
@@ -17,8 +17,8 @@ void readPWMChannels(Channels_t Channels[]){
   // read the state of the input
   uint8_t pinStateNow = digitalRead(Channels[channel].pin);
 
-  // if PWM is above MAX_PWM, set maxFlag and output 900 (throttle cut)
-  if((timeNow - Channels[channel].tStart) > MAX_PWM){
+  // if PWM is above MAX_PWM_OUTPUT, set maxFlag and output 900 (throttle cut)
+  if((timeNow - Channels[channel].tStart) > MAX_PWM_OUTPUT){
     Channels[channel].tWidth = 900;
     maxFlag = 1;
   }
@@ -36,15 +36,6 @@ void readPWMChannels(Channels_t Channels[]){
       else{
         // pin changed from high to low; current time minus start time is the pulse width
         Channels[channel].tWidth = timeNow - Channels[channel].tStart;
-
-        // DEBUG PRINT
-        // print channel PWM width
-        // if(channel == 0 && millis()%500 < 20){
-        //   Serial.print("\tCH:");     
-        //   Serial.print(channel+1);
-        //   Serial.print(" ");
-        //   Serial.println(Channels[channel].tWidth);
-        // }
       }
     }
   }
