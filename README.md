@@ -36,6 +36,13 @@ do pino que ativou a interrupção. Se estiver em nível alto, significa que est
 inicial é salvo. Se estiver em nível baixo, o pulso terminou, então a largura do pulso é calculada subtraindo o
 tempo atual com o tempo inicial que foi salvo anteriormente.
 
+As larguras dos pulsos ficam salvas nas variáveis globais `tWidthD2` e `tWidthD3` declaradas no arquivo principal.
+As flags `flagD2` e `flagD3` indicam se a interrupção foi executada para aquele pino. Elas são usadas no `loop()`
+como _polling_ para saber se o PWM ainda está ativo, pois não haverá interrupções se o PWM parar. Para isso, 
+o programa espera 20 milisegundos (equivalente a 50 Hz, frequência usada no ESC) e verifica se a interrupção
+foi executada. Se a flag estiver em `false`, nenhum pulso foi detectado, o pino de verificação é levado
+ao nível lógico baixo.
+
 ### Fluxograma
 
 ![fluxograma](img/fluxograma.png)
