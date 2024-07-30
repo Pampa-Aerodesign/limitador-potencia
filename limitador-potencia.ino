@@ -6,9 +6,6 @@
 #include "inc/current.hpp"
 #include "inc/voltage.hpp"
 
-// Input PWM channels
-Channels_t Channels[NUM_CHANNELS] = {0};
-
 // Servo object (calculated PWM output for the ESC)
 Servo esc;
 
@@ -20,41 +17,45 @@ double output;          // PID's output that will be used to set the PWM
 // Creating the PID Object
 PID pid(&input, &output, &setpoint, KP, KI, KD, DIRECT);
 
+// Global variables used in pwm.cpp for the ISRs
+volatile bool flagD2 = false;
+volatile bool flagD3 = false;
+volatile uint32_t tWidthD2 = 0;
+volatile uint32_t tWidthD3 = 0;
+
 
 void setup(){
-  // DEBUG
-  // Serial.begin(115200);
+  // Start serial output
+  Serial.begin(115200);
+  while (!Serial);
+
+  Serial.println("Initializing...");
 
   // attaches the ESC on pinESC to the servo object
-  esc.attach(pinESC); 
+  esc.attach(pinESC);
 
   // setup check pins
   pinMode(pinCheck, OUTPUT);
-  digitalWrite(pinCheck, HIGH);
-
-  // setup channel pins
-  for(int i = 0; i < NUM_CHANNELS; i++){
-    Channels[i].pin = PinsPWM[i];
-    pinMode(Channels[i].pin, INPUT_PULLUP);
-    Channels[i].pinStateLast = digitalRead(Channels[i].pin);
-    Channels[i].tStart = micros();
-  }
 
   // Define the range of PID's outputs (1000 a 2000)
   pid.SetOutputLimits(MIN_PWM, MAX_PWM);
 
   // Enables the PID controller 
   pid.SetMode(AUTOMATIC);
+
+  // Set pin 2 and 3 to interrupt every time the input changes
+  attachInterrupt(digitalPinToInterrupt(2), ISR_D2, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(3), ISR_D3, CHANGE);
+
+  Serial.println("Setup done, running loop.");
 }
 
 
 void loop(){
-  // read all PWM channels
-  readPWMChannels(Channels);
-
-  // PWM signal coming from the other Arduino and from the RX
-  uint16_t pwmArduino = Channels[0].tWidth;
-  uint16_t pwmRX = Channels[1].tWidth;
+  // PWM signal from the RX and the other Arduino
+  // coming from the ISRs
+  uint32_t pwmRX = tWidthD2;
+  uint32_t pwmArduino = tWidthD3;
 
   // calculate limited PWM
   // this is where we read voltage and current from the battery
@@ -91,20 +92,24 @@ void loop(){
   outputPWM = static_cast<uint16_t>(output);
 
   // check if calculated PWM is close to the PWM calculated by the other arduino
-  if(inRange(outputPWM, pwmArduino, TOLERANCE)){
+  if(inRange(outputPWM, pwmArduino, TOLERANCE) & flagD3){
     // PWM is within tolerance, output HIGH on the Check pin
     digitalWrite(pinCheck, HIGH);
-
-    // send calculated PWM signal to the ESC
-    esc.writeMicroseconds(outputPWM); 
   }
   else{
     // PWM is out of range, set check pin to low
     digitalWrite(pinCheck, LOW);
-
-    // send minimum PWM signal to ESC
-    esc.writeMicroseconds(MIN_PWM);
   }
+
+  // send calculated PWM signal to the ESC
+  esc.writeMicroseconds(outputPWM);
+
+  // Reset interrupt flags and width
+  flagD2 = false;
+  flagD3 = false;
+
+  // wait 20 miliseconds (50 Hz)
+  delay(20);
 }
 
 // Return true if value is close to the reference plus or minus tolerance

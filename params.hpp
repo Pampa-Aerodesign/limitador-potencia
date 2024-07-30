@@ -49,23 +49,8 @@ const uint8_t pinCurrent = PIN_A4;
 const uint8_t pinCheck = 13;
 
 // ESC PWM output pin
-const uint8_t pinESC = 9;
+const uint8_t pinESC = 5;
 
 // PWM input pins
-const uint8_t pinPWMArduino = 10;
-const uint8_t pinPWMRX = 11;
-const uint8_t PinsPWM[] = {
-  pinPWMArduino,
-  pinPWMRX
-};
-
-// shouldn't need to change
-const uint8_t NUM_CHANNELS = sizeof(PinsPWM)/sizeof(PinsPWM[0]);
-
-// Channel struct
-typedef struct structChannels{
-  uint8_t   pin;            // Channel pin
-  uint8_t   pinStateLast;   // Last state the pin was in (HIGH or LOW)
-  uint32_t  tStart;         // Time in microseconds the pin changed to HIGH
-  uint32_t  tWidth;         // Width of the pulse in microseconds
-} Channels_t;
+const uint8_t pinPWMArduino = 3;
+const uint8_t pinPWMRX = 2;

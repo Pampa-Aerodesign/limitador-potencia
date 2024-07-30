@@ -1,52 +1,48 @@
 #include <Arduino.h>
 #include "../inc/pwm.hpp"
 
-// Flag used to check if PWM reached MAX_PWM_OUTPUT
-int maxFlag = 0;
+// Global variables used for the ISRs (declared in limitador-potencia.ino)
+extern volatile bool flagD2;        // Flags that indicate if the ISR happened
+extern volatile bool flagD3;
+volatile uint32_t tStartD2 = 0;     // Start time (PWM signal went HIGH)
+volatile uint32_t tStartD3 = 0;
+extern volatile uint32_t tWidthD2;  // PWM width
+extern volatile uint32_t tWidthD3;
 
-// This function will read all PWM channels
-// and store the pulse width in microseconds
-void readPWMChannels(Channels_t Channels[]){
-  // Current channel
-  static uint8_t channel = 0;
+// Interrupt handler for pin D2 (Receiver)
+// This interrupt runs whenever the state of D2 changes
+// from low to high OR high to low
+void ISR_D2(){
+  // save ISR time
+  uint32_t time = micros();
 
-  // Current time in microseconds
-  uint32_t timeNow = micros();
+  // set flag
+  flagD2 = true;
 
-  // each pass we check one channel
-  // read the state of the input
-  uint8_t pinStateNow = digitalRead(Channels[channel].pin);
+  // if pin is HIGH, save the start time
+  if(digitalRead(2) == HIGH)
+    tStartD2 = time;
 
-  // if PWM is above MAX_PWM_OUTPUT, set maxFlag and output 900 (throttle cut)
-  if((timeNow - Channels[channel].tStart) > MAX_PWM_OUTPUT){
-    Channels[channel].tWidth = 900;
-    maxFlag = 1;
-  }
+  // if pin is LOW, calculate the pulse width (current ISR time - start time)
+  else
+    tWidthD2 = time - tStartD2;
+}
 
-  // if pin state changed (different than last)
-  if(maxFlag == 0){
-    if(pinStateNow != Channels[channel].pinStateLast){        
-      // save as new last
-      Channels[channel].pinStateLast = pinStateNow;
+// Interrupt handler for pin D3 (second Arduino)
+// This interrupt runs whenever the state of D3 changes
+// from low to high OR high to low
+void ISR_D3(){
+  // save ISR time
+  uint32_t time = micros();
 
-      if(pinStateNow == HIGH){            
-        // pin changed from low to high; log the current time
-        Channels[channel].tStart = timeNow;
-      }
-      else{
-        // pin changed from high to low; current time minus start time is the pulse width
-        Channels[channel].tWidth = timeNow - Channels[channel].tStart;
-      }
-    }
-  }
-  // else?
-  if(pinStateNow == LOW){
-    Channels[channel].pinStateLast = LOW;
-    Channels[channel].tStart = timeNow;
-    maxFlag = 0;
-  }
+  // set flag
+  flagD3 = true;
 
-  // go to next channel
-  if(++channel >= NUM_CHANNELS)
-    channel = 0;
+  // if pin is HIGH, save the start time
+  if(digitalRead(3) == HIGH)
+    tStartD3 = time;
+
+  // if pin is LOW, calculate the pulse width (current ISR time - start time)
+  else
+    tWidthD3 = time - tStartD3;
 }
