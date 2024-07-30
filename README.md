@@ -32,9 +32,9 @@ a interrupção será executada.
 Existem duas ISRs, cada uma associada a um pino. Seus códigos são idênticos, mudando apenas algumas variáveis.
 
 Primeiro, a ISR armazena o tempo atual usando `millis()` e ativa a flag associada. Então, é feita a leitura
-do pino que ativou a interrupção. Se estiver em nível alto, significa que está no início do pulso, o tempo atual
-é salvo. Se estiver em nível baixo, o pulso terminou, então a largura do pulso é calculada subtraindo o tempo
-atual e o tempo inicial que foi salvo anteriormente.
+do pino que ativou a interrupção. Se estiver em nível alto, significa que está no início do pulso, então o tempo 
+inicial é salvo. Se estiver em nível baixo, o pulso terminou, então a largura do pulso é calculada subtraindo o
+tempo atual com o tempo inicial que foi salvo anteriormente.
 
 ### Fluxograma
 
