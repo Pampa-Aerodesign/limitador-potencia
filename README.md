@@ -11,17 +11,28 @@ para maximizar o empuxo e a pontuação na competição, desenvolvemos este sist
 ## Como funciona
 
 O sistema é composto por dois Arduinos Nano executando o mesmo código.
-Os dois Arduinos vão fazer a leitura dos sensores de corrente e de tensão,
-do sinal PWM vindo do ESC.
+Cada Arduinos fará a leitura dos sensores de corrente e de tensão, e do sinal PWM vindo do receptor.
 
 Após realizar as leituras, cada Arduino vai calcular um novo PWM para o motor levando em conta
 a potência obtida dos sensores, de modo que a potência do motor não ultrapasse um determinado valor.
 
-Cada Arduino também faz a leitura do PWM gerado pelo outro e verifica se o valor está dentro
-de uma tolerância. Caso um dos Arduinos perceba que o PWM do outro Arduino está fora da tolerância,
+Cada Arduino também faz a leitura do PWM gerado pelo outro e verifica se está dentro de uma tolerância.
+Caso um dos Arduinos perceba que o PWM gerado pelo outro Arduino está fora da tolerância,
 seja por uma discrepância nos valores ou por uma falha no segundo Arduino,
 um pino de verificação (Check) será levado ao nível lógico baixo, fazendo com que o PWM
 dos Arduinos seja barrado e o PWM do receptor seja enviado ao ESC.
+
+### Leitura dos sinais PWM
+
+Para ler os sinais PWM do receptor e do segundo Arduino, foram utilizados os dois pinos de interrupção
+do Arduino Nano (pinos digitais 2 e 3). As interrupções foram configuradas no modo CHANGE, ou seja, 
+cada vez que o pino associado mudar de estado (seja de alto para baixo ou o contrário) 
+a interrupção será executada.
+
+Existem duas ISRs, cada uma associada a um pino. Seus códigos são idênticos, mudando apenas algumas variáveis.
+
+Primeiro, a ISR armazena o tempo atual usando `millis()` e ativa a flag associada. Então, é feita a leitura
+do pino que ativou a interrupção para identificar se 
 
 ### Fluxograma
 

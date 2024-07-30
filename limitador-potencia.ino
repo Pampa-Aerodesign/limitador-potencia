@@ -91,13 +91,14 @@ void loop(){
   // uses a cast to guarantee 16-bit integer format
   outputPWM = static_cast<uint16_t>(output);
 
-  // check if calculated PWM is close to the PWM calculated by the other arduino
+  // check if calculated PWM is within tolerance of the PWM calculated by the other arduino
+  // and if the interrupt flag has been set since the last loop
   if(inRange(outputPWM, pwmArduino, TOLERANCE) & flagD3){
     // PWM is within tolerance, output HIGH on the Check pin
     digitalWrite(pinCheck, HIGH);
   }
   else{
-    // PWM is out of range, set check pin to low
+    // PWM is out of range, set Check pin to low
     digitalWrite(pinCheck, LOW);
   }
 

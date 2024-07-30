@@ -14,7 +14,7 @@ extern volatile uint32_t tWidthD3;
 // from low to high OR high to low
 void ISR_D2(){
   // save ISR time
-  uint32_t time = micros();
+  uint32_t time = millis();
 
   // set flag
   flagD2 = true;
@@ -33,7 +33,7 @@ void ISR_D2(){
 // from low to high OR high to low
 void ISR_D3(){
   // save ISR time
-  uint32_t time = micros();
+  uint32_t time = millis();
 
   // set flag
   flagD3 = true;
