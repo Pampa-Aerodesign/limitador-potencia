@@ -1,6 +1,6 @@
 # limitador-potencia
 
-Sistema limitador de potência para motores BLDC com foco no Aerodesign.
+Sistema limitador de potência para motores BLDC com foco no projeto SAE Aerodesign 2024.
 
 ## Objetivo
 
